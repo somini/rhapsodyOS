@@ -27,27 +27,50 @@ global start ; Define a public label
 ;; | 0xF   | white          |
 
 section .text ; Executable code
-bits 32 ; Protected Mode (32 bits)
-start:
-	; Memory-Mapped Screen @ 0xb8000
-	;;  _ background color
-	;; /  __foreground color
-	;; | /
-	;; V V
-	;; 0 2 48 <- letter, in ASCII
-	; Print the following chars:
-	mov word [0xb8000], 0x0248 ; H
-	mov word [0xb8002], 0x0265 ; e
-	mov word [0xb8004], 0x026c ; l
-	mov word [0xb8006], 0x026c ; l
-	mov word [0xb8008], 0x026f ; o
-	mov word [0xb800a], 0x022c ; ,
-	mov word [0xb800c], 0x0220 ;
-	mov word [0xb800e], 0x0257 ; W
-	mov word [0xb8010], 0x026f ; o
-	mov word [0xb8012], 0x0272 ; r
-	mov word [0xb8014], 0x026c ; l
-	mov word [0xb8016], 0x0264 ; d
-	mov word [0xb8018], 0x0221 ; !
+	bits 32 ; Protected Mode (32 bits)
+	start:
+		; Setup Memory Paging
+		; Point the first entry on level 4 to the first entry on level 3
+		mov eax, p3_table ; Copy the location of the level 3 table to the 1st register
+		or eax, 0b11 ; Set the two least significant bits to 1
+		;          ^ Present: This page is in memory
+		;         ^  Writable
+		mov dword [p4_table + 0], eax ; Store the level 3 table on the 0th location of the level 4 table
+		; Do the same for level 3/level 2 page tables
+		mov eax, p2_table
+		or eax, 0b11
+		mov dword [p3_table + 0], eax
+		; Do the same for level 2/level 1 page tables
 
-	hlt ; Halt
+		; Memory-Mapped Screen @ 0xb8000
+		;;  _ background color
+		;; /  __foreground color
+		;; | /
+		;; V V
+		;; 0 2 48 <- letter, in ASCII
+		; Print the following chars:
+		mov word [0xb8000], 0x0248 ; H
+		mov word [0xb8002], 0x0265 ; e
+		mov word [0xb8004], 0x026c ; l
+		mov word [0xb8006], 0x026c ; l
+		mov word [0xb8008], 0x026f ; o
+		mov word [0xb800a], 0x022c ; ,
+		mov word [0xb800c], 0x0220 ;
+		mov word [0xb800e], 0x0257 ; W
+		mov word [0xb8010], 0x026f ; o
+		mov word [0xb8012], 0x0272 ; r
+		mov word [0xb8014], 0x026c ; l
+		mov word [0xb8016], 0x0264 ; d
+		mov word [0xb8018], 0x0221 ; !
+
+		hlt ; Halt
+
+section .bss
+	align 4096
+
+	p4_table: ; Level 4 Page Table
+		resb 4096 ;Reserve bytes
+	p3_table:
+		resb 4096
+	p2_table:
+		resb 4096
