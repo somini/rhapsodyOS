@@ -8,7 +8,7 @@ section .multiboot_header
 header_start:
 	dd 0xe85250d6                ; Magic Number - Multiboot Header
 	dd 0                         ; Protected Mode code
-	dd header_start - header_end ; Header Length
+	dd header_end - header_start ; Header Length
 
 	; Checksum
 	; Unsigned integer
@@ -17,5 +17,5 @@ header_start:
 	; End Tag
 	dw 0 ; Type
 	dw 0 ; Flags
-	dw 8 ; Size
+	dd 8 ; Size
 header_end:
