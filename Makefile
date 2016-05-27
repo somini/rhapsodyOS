@@ -1,4 +1,4 @@
-GRUB_MKRESCUE=grub2-mkrescue
+GRUB_MKRESCUE=grub-mkrescue
 NASM=nasm
 QEMU=qemu-system-x86_64
 
