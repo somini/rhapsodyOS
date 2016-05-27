@@ -40,7 +40,35 @@ section .text ; Executable code
 		mov eax, p2_table
 		or eax, 0b11
 		mov dword [p3_table + 0], eax
-		; Do the same for level 2/level 1 page tables
+		; Point each level 2 entry to a physical memory page
+		mov ecx, 0 ; Counter
+		.map_p2_table: ; Start loop
+			mov eax, 0x200000 ; 2MiB - Page Size
+			mul ecx ; Calculate the current index
+			or eax, 0b10000011 ; Metadata about the pages - Similar to the upper setup
+			;         ^ Huge pages : Bigger than 4KiB
+			mov [p2_table + ecx * 8], eax ; Copy the current metadata-marked index to the level 2 entry location
+			inc ecx ; Increment the counter
+			cmp ecx, 512 ; Loop 512 times
+			jne .map_p2_table ; Loop
+		; Map 512 * 2MiB = 1024MiB = 1GiB
+		; Tell the hardware about the level 4 page table
+		mov eax, p4_table ; The Control Register only accepts mov from other registers
+		mov cr3, eax
+		; Enable Physical Address Extension (PAE)
+		mov eax, cr4
+		or eax, 1 << 5 ; 0b10000
+		mov cr4, eax
+		; Set long mode
+		mov ecx, 0xC0000080
+		rdmsr ; Read Model-Specific Register
+		or eax, 1 << 8
+		wrmsr ; Write Model-Specific Register
+		; Enable paging
+		mov eax, cr0
+		or eax, 1 << 31
+		or eax, 1 << 16
+		mov cr0, eax
 
 		; Memory-Mapped Screen @ 0xb8000
 		;;  _ background color
