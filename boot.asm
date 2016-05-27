@@ -70,6 +70,9 @@ section .text ; Executable code
 		or eax, 1 << 16
 		mov cr0, eax
 
+		; Setup a GDT
+		lgdt [gdt64.pointer]
+
 		; Memory-Mapped Screen @ 0xb8000
 		;;  _ background color
 		;; /  __foreground color
@@ -93,7 +96,7 @@ section .text ; Executable code
 
 		hlt ; Halt
 
-section .bss
+section .bss ; Block started by symbol
 	align 4096
 
 	p4_table: ; Level 4 Page Table
@@ -102,3 +105,20 @@ section .bss
 		resb 4096
 	p2_table:
 		resb 4096
+section .rodata ; Read-only data
+	gdt64:
+		dq 0 ; Define quad (64bits)
+		; Define code segment
+		dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53)
+		; 44: Descriptor type (1 for code and data)
+		; 47: Present
+		; 41: Read/Write (even though it's read-only)
+		; 43: Executable
+		; 53: 64-bits
+		; Define data segment
+		dq (1<<44) | (1<<47) | (1<<41)
+		; Equal to the code section, except
+		; 41: Writable
+		.pointer:
+		dw .pointer - gdt64 - 1
+		dq gdt64
