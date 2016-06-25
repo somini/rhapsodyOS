@@ -94,6 +94,16 @@ section .text ; Executable code
 		mov word [0xb8016], 0x0264 ; d
 		mov word [0xb8018], 0x0221 ; !
 
+		; Update the segment registers
+		mov ax, gdt64.data ;Load the target location into a register
+		mov ss, ax ; Stack segment
+		mov ds, ax ; Data Segment
+		mov es, ax ; Extra segment
+		; There's still the "cs" code segment register to be updated
+		; That can only be done with a long jump
+		; Do a long jump into honest-to-god 64 bits mode
+		jmp gdt64.code:long_mode_start
+
 		hlt ; Halt
 
 section .bss ; Block started by symbol
@@ -124,3 +134,13 @@ section .rodata ; Read-only data
 		.pointer:
 		dw .pointer - gdt64 - 1
 		dq gdt64
+section .text
+	bits 64
+	long_mode_start:
+		; This is true 64-bits mode!
+
+		; Mystery code
+		mov rax, 0x2f592f412f4b2f4f
+		mov qword [0xb8000], rax
+
+		hlt ; Halt
