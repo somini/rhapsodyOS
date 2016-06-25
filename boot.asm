@@ -109,16 +109,18 @@ section .rodata ; Read-only data
 	gdt64:
 		dq 0 ; Define quad (64bits)
 		; Define code segment
-		dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53)
-		; 44: Descriptor type (1 for code and data)
-		; 47: Present
-		; 41: Read/Write (even though it's read-only)
-		; 43: Executable
-		; 53: 64-bits
-		; Define data segment
-		dq (1<<44) | (1<<47) | (1<<41)
-		; Equal to the code section, except
-		; 41: Writable
+		.code: equ $ - gdt64
+			dq (1<<44) | (1<<47) | (1<<41) | (1<<43) | (1<<53)
+			; 44: Descriptor type (1 for code and data)
+			; 47: Present
+			; 41: Read/Write (even though it's read-only)
+			; 43: Executable
+			; 53: 64-bits
+			; Define data segment
+		.data: equ $ - gdt64
+			dq (1<<44) | (1<<47) | (1<<41)
+			; Equal to the code section, except
+			; 41: Writable
 		.pointer:
 		dw .pointer - gdt64 - 1
 		dq gdt64
