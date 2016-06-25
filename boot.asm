@@ -139,7 +139,7 @@ section .text
 	long_mode_start:
 		; This is true 64-bits mode!
 
-		; Mystery code
+		; This will print "OKAY" with fancy backgrounds and all
 		mov rax, 0x2f592f412f4b2f4f
 		mov qword [0xb8000], rax
 
