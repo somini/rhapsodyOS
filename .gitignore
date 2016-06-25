@@ -1,7 +1,2 @@
-*.o
-/kernel.bin
-/os.iso
-/isofiles
-/build
-target
+/target
 Cargo.lock

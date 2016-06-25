@@ -2,30 +2,33 @@ GRUB_MKRESCUE=grub-mkrescue
 NASM=nasm
 QEMU=qemu-system-x86_64
 
-default: build
+default: build build_iso
 
-.PHONY: clean
+build: target/kernel.bin
+build_iso: target/os.iso
 
-build/multiboot_header.o: multiboot_header.asm
-	mkdir -p build
-	$(NASM) -f elf64 multiboot_header.asm -o build/multiboot_header.o
+target/multiboot_header.o: src/asm/multiboot_header.asm
+	mkdir -p target
+	$(NASM) -f elf64 src/asm/multiboot_header.asm -o target/multiboot_header.o
 
-build/boot.o: boot.asm
-	$(NASM) -f elf64 boot.asm -o build/boot.o
+target/boot.o: src/asm/boot.asm
+	$(NASM) -f elf64 src/asm/boot.asm -o target/boot.o
 
-build/kernel.bin: build/multiboot_header.o build/boot.o linker.ld
-	ld -n -o build/kernel.bin -T linker.ld build/multiboot_header.o build/boot.o
+target/kernel.bin: target/multiboot_header.o target/boot.o build/linker.ld
+	ld -n -o target/kernel.bin -T build/linker.ld target/multiboot_header.o target/boot.o
 
-build/os.iso: build/kernel.bin grub.cfg
-	mkdir -p build/isofiles/boot/grub
-	cp grub.cfg build/isofiles/boot/grub
-	cp build/kernel.bin build/isofiles/boot/
-	$(GRUB_MKRESCUE) -o build/os.iso build/isofiles
+target/os.iso: target/kernel.bin build/grub.cfg
+	mkdir -p target/isofiles/boot/grub
+	cp build/grub.cfg target/isofiles/boot/grub
+	cp target/kernel.bin target/isofiles/boot/
+	$(GRUB_MKRESCUE) -o target/os.iso target/isofiles
 
-build: build/os.iso
 
-run: build/os.iso
-	$(QEMU) -cdrom build/os.iso
+run: target/os.iso
+	$(QEMU) -cdrom target/os.iso
 
 clean:
-	rm -rf build
+	rm -rf target
+	cargo clean
+
+.PHONY: default clean run build build_iso
