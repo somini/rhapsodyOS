@@ -2,6 +2,7 @@
 ; asmsyntax=nasm
 
 global start ; Define a public label
+extern kmain
 
 ; mov: Copy memory around
 ;; mov size place, thing
@@ -80,19 +81,19 @@ section .text ; Executable code
 		;; V V
 		;; 0 2 48 <- letter, in ASCII
 		; Print the following chars:
-		mov word [0xb8000], 0x0248 ; H
-		mov word [0xb8002], 0x0265 ; e
-		mov word [0xb8004], 0x026c ; l
-		mov word [0xb8006], 0x026c ; l
-		mov word [0xb8008], 0x026f ; o
-		mov word [0xb800a], 0x022c ; ,
-		mov word [0xb800c], 0x0220 ;
-		mov word [0xb800e], 0x0257 ; W
-		mov word [0xb8010], 0x026f ; o
-		mov word [0xb8012], 0x0272 ; r
-		mov word [0xb8014], 0x026c ; l
-		mov word [0xb8016], 0x0264 ; d
-		mov word [0xb8018], 0x0221 ; !
+		; mov word [0xb8000], 0x0248 ; H
+		; mov word [0xb8002], 0x0265 ; e
+		; mov word [0xb8004], 0x026c ; l
+		; mov word [0xb8006], 0x026c ; l
+		; mov word [0xb8008], 0x026f ; o
+		; mov word [0xb800a], 0x022c ; ,
+		; mov word [0xb800c], 0x0220 ;
+		; mov word [0xb800e], 0x0257 ; W
+		; mov word [0xb8010], 0x026f ; o
+		; mov word [0xb8012], 0x0272 ; r
+		; mov word [0xb8014], 0x026c ; l
+		; mov word [0xb8016], 0x0264 ; d
+		; mov word [0xb8018], 0x0221 ; !
 
 		; Update the segment registers
 		mov ax, gdt64.data ;Load the target location into a register
@@ -101,8 +102,8 @@ section .text ; Executable code
 		mov es, ax ; Extra segment
 		; There's still the "cs" code segment register to be updated
 		; That can only be done with a long jump
-		; Do a long jump into honest-to-god 64 bits mode
-		jmp gdt64.code:long_mode_start
+		; Do a long jump into Rustland
+		jmp gdt64.code:kmain
 
 		hlt ; Halt
 
